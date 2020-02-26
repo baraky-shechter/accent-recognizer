@@ -27,8 +27,6 @@ def main():
     device = setupDevice()
     dataset = processDataset()
     network = createNeuralNetwork()
-    train(network)
-    test(network)
 
 if __name__ == "__main__":
     main()

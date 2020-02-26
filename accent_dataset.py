@@ -7,26 +7,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 import console
 
-dataset_pathname = './dataset/'
-speakers_csv_pathname = dataset_pathname + 'speakers_all.csv'
-dataset_csv_pathname = dataset_pathname + 'speakers_all.csv'
-dataset_recordings_folder_pathname = dataset_pathname + 'recordings/'
+dataset_pathname = r'./dataset/'
+speakers_csv_pathname = os.path.join(dataset_pathname, r'speakers_all.csv')
+dataset_recordings_folder_pathname = os.path.join(dataset_pathname, r'recordings/recordings/')
 
 class AccentDataset(Dataset):
     def __init__(self):
         self.samples = []
         self.demographics_frame = pd.read_csv(speakers_csv_pathname)
-        print(self.demographics_frame)
-
-
-        for recording in os.listdir(dataset_recordings_folder_pathname):
-            self.samples.append(recording)
+        console.log(self.demographics_frame)
 
     def __len__(self):
         return len(self.samples)
 
     def __getitem__(self, item):
         return self.samples[item]
+
 
 
 
