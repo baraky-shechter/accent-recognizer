@@ -9,6 +9,7 @@ import accent_dataset as d
 import neural_network
 import console
 
+
 def setupDevice():
     return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
