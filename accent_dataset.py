@@ -11,6 +11,7 @@ from torchaudio.datasets.utils import walk_files
 import librosa
 import warnings
 
+
 warnings.filterwarnings('ignore')
 
 dataset_pathname = r'dataset/'
@@ -21,22 +22,18 @@ headernames = ['age', 'age_onset', 'filename',
            'native_language', 'sex', 'speakerid', 'country']
 
 
-def load_recording(row, filename, path, ext):
+def load_recording(filename, header, row, path, ext):
     csv = pd.read_csv(speakers_csv_pathname)
-    csv = csv.to_numpy(dtype=object)
-    labels = csv[row]
+    csv = csv.to_numpy()
+    line = csv[row]
+
     file_audio = os.path.join(path, filename + ext)
-
-    # audio_tensor, sample_rate = sf.read(file_audio, dtype='float32')
-    audio_tensor, sample_rate = librosa.load(file_audio)
-    # audio_tensor = audio_tensor.T
-    # data_22k = librosa.resample(audio_tensor, sample_rate, 22050)
-    # print(data_22k)
+    audio_tensor, sample_rate = torchaudio.load(file_audio)
     padded_tensor = librosa.util.fix_length(audio_tensor, 15000000)
-    print(padded_tensor)
-    spectogram = librosa.core.stft(padded_tensor)
-
-    return {'tensor' : spectogram,'sample_rate' : sample_rate, 'labels' : labels}
+    labels = dict(zip(header, line))
+    # audio_tensor = torchaudio.transforms.Spectrogram()(audio_tensor)
+    # print(padded_tensor)
+    return padded_tensor, labels
 
 class AccentDataset(Dataset):
     ext = '.mp3'
@@ -53,6 +50,6 @@ class AccentDataset(Dataset):
 
     def __getitem__(self, n):
         filename = self._walker[n]
-        return load_recording(n, filename, dataset_recordings_folder_pathname, self.ext)
+        return load_recording(filename, self._header, n, dataset_recordings_folder_pathname, self.ext)
 
 

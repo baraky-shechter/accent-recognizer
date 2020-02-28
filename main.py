@@ -9,35 +9,47 @@ import accent_dataset as d
 import neural_network
 import console
 
-
-def setupDevice():
-    return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 def processDataset():
     dataset = d.AccentDataset()
-    print(dataset.__len__())
-    loader = torch.utils.data.DataLoader(dataset,
-                                                 batch_size=4, shuffle=True,
-                                                 num_workers=4)
-    print(loader)
-    for i in range(len(dataset)):
-        sample = dataset[i]
-        console.log(i, sample['tensor'].shape, sample['sample_rate'], sample['labels'])
+    loader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=False)
     return loader
 
-def createNeuralNetwork(dataloader):
-    return neural_network.NN()
+def train(epochs, dataloader, network, optimizer, criterion):
+    loss_values = []
 
-def train(network):
-    raise NotImplementedError
+    for epoch in range(epochs):
+        running_loss = 0.0
+        for i, data in enumerate(dataloader,0):
+            inputs, labels = data
+
+            if (torch.cuda.is_available()):
+                inputs = inputs.cuda()
+                labels = labels.cuda()
+
+            optimizer.zero_grad()
+
+            outputs = network(inputs)
+            loss = criterion(outputs, labels)
+
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+            if i % 200 == 0:
+                print('[%d, %5d] loss: %.3f' %
+                      (epoch + 1, i + 1, running_loss / 200))
+                loss_values.append(running_loss / len(dataloader.dataset))
+                running_loss = 0.0
 
 def test(network):
     raise NotImplementedError
 
 def main():
-    device = setupDevice()
     dataloader = processDataset()
-    network = createNeuralNetwork(dataloader)
+    network = neural_network.NN()
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.SGD(network.parameters(), lr=0.001, momentum=0.9)
+    train(10, dataloader, network, optimizer, criterion)
 
 if __name__ == "__main__":
     main()
