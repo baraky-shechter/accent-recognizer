@@ -9,27 +9,29 @@ import console
 import glob
 from torchaudio.datasets.utils import walk_files
 
-dataset_pathname = r'./dataset/'
+dataset_pathname = r'dataset/'
 speakers_csv_pathname = os.path.join(dataset_pathname, r'speakers_all.csv')
 dataset_recordings_folder_pathname = os.path.join(dataset_pathname, r'recordings/recordings/')
 
-classes = ['age', 'age_onset', 'birthplace', 'filename',
+headernames = ['age', 'age_onset', 'filename',
            'native_language', 'sex', 'speakerid', 'country']
 
 
-def load_recording(header, filename, path, ext):
-    csv = np.genfromtxt(speakers_csv_pathname, delimiter=',')
-    column = csv[classes.index('filename')]
-    print(column)
-
-    row = np.where(csv == filename + ext)
-    line = row[0]
-    
-    line = csv
+def load_recording(filename, path, ext):
+    csv = csvToNumpy(path)
     file_audio = os.path.join(path, filename + ext)
+    file_audio = torchaudio(file_audio)
     waveform, sample_rate = torchaudio(file_audio)
+    waveform, sample_rate = transform_audio(waveform, sample_rate)
+
+def transform_audio(waveform, sample_rate):
+    #transform here
     return waveform, sample_rate
 
+def csvToNumpy(path):
+    csv = pd.read_csv(path, delimiter='')
+    csv.to_numpy(dtype=object)
+    return csv
 
 class AccentDataset(Dataset):
     ext = '.mp3'
@@ -40,7 +42,6 @@ class AccentDataset(Dataset):
         )
         self._header = next(walker)
         self._walker = list(walker)
-
 
     def __len__(self):
         return len(self._walker)
