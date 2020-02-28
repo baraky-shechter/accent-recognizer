@@ -7,16 +7,21 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import accent_dataset as d
 import neural_network
+import console
 
 def setupDevice():
     return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def processDataset():
     dataset = d.AccentDataset()
+    print(dataset.__len__())
     loader = torch.utils.data.DataLoader(dataset,
                                                  batch_size=4, shuffle=True,
                                                  num_workers=4)
     print(loader)
+    for i in range(len(dataset)):
+        sample = dataset[i]
+        console.log(i, sample['tensor'].shape, sample['sample_rate'], sample['labels'])
     return loader
 
 def createNeuralNetwork(dataloader):
