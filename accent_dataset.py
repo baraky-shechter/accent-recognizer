@@ -51,7 +51,7 @@ class AccentDataset(Dataset):
         csv = np.genfromtxt(speakers_csv_pathname, delimiter=',')
         self.labels = []
         for i in range(1,len(csv[:])):
-            self.labels.append(csv[i,5])
+            self.labels.append(csv[i])
 
 
         print(self.labels)
