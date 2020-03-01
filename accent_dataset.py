@@ -26,11 +26,9 @@ class AccentDataset(Dataset):
     ext = '.mp3'
 
     def load_recording(self, filename, row, path, ext):
-        csv = pd.read_csv(speakers_csv_pathname, sep= ',', dtype= 'str')
-        csv = csv.to_numpy()
-        # csv = np.genfromtxt(speakers_csv_pathname, delimiter=',')
-        # headers = csv[1]
-        # line = csv[row]
+        csv = np.genfromtxt(speakers_csv_pathname, delimiter=',')
+        print(csv)
+        speakerid = csv[row]
         # labels = dict(zip(headers, line))
         file_audio = os.path.join(path, filename + ext)
         sound_data, sample_size = torchaudio.load(file_audio)
@@ -46,15 +44,14 @@ class AccentDataset(Dataset):
         # labels = torch.from_numpy(csv[row])
         # print(labels)
         # print(labels.size())
-        label = self.labels[row]
-        return formatted_sound, label
+        labels = torch.tensor(self.labels)
+        return formatted_sound
 
     def __init__(self):
-        csv = np.genfromtxt(speakers_csv_pathname, delimiter=',', dtype='str')
+        csv = np.genfromtxt(speakers_csv_pathname, delimiter=',')
         self.labels = []
-
         for i in range(1,len(csv[:])):
-            self.labels.append(csv[i:])
+            self.labels.append(csv[i,5])
 
 
         print(self.labels)
@@ -69,8 +66,6 @@ class AccentDataset(Dataset):
 
     def __getitem__(self, n):
         filename = self._walker[n]
-        # label = self.labels[n]
-        # print(label)
-        return self.load_recording(filename, n, dataset_recordings_folder_pathname, self.ext)
+        return self.load_recording(filename, n, dataset_recordings_folder_pathname, self.ext), self.labels[n]
 
 
