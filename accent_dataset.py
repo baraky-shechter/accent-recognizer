@@ -22,13 +22,12 @@ headernames = ['age', 'age_onset', 'filename',
            'native_language', 'sex', 'speakerid', 'country']
 
 
-
-
 class AccentDataset(Dataset):
     ext = '.mp3'
 
     def load_recording(self, filename, row, path, ext):
-        # # csv = pd.read_csv(speakers_csv_pathname)
+        csv = pd.read_csv(speakers_csv_pathname, sep= ',', dtype= 'str')
+        csv = csv.to_numpy()
         # csv = np.genfromtxt(speakers_csv_pathname, delimiter=',')
         # headers = csv[1]
         # line = csv[row]
@@ -39,19 +38,24 @@ class AccentDataset(Dataset):
         print(sound_data, sound_data.numel())
         if sound_data.numel() < 4200000:
             temp_data[:sound_data.numel()] = sound_data[:]
-        print(temp_data, temp_data.numel())
+        # print(temp_data, temp_data.numel())
         sound_data = temp_data
         formatted_sound = torchaudio.transforms.Spectrogram()(sound_data)
-        print(formatted_sound)
 
-        return formatted_sound, self.labels
+        print(formatted_sound)
+        # labels = torch.from_numpy(csv[row])
+        # print(labels)
+        # print(labels.size())
+        label = self.labels[row]
+        return formatted_sound, label
 
     def __init__(self):
-        csv = pd.read_csv(speakers_csv_pathname)
-        self.labels = list()
+        csv = np.genfromtxt(speakers_csv_pathname, delimiter=',', dtype='str')
+        self.labels = []
 
-        for i in range(0,len(csv)):
-            self.labels.append(csv.iloc[i,6])
+        for i in range(1,len(csv[:])):
+            self.labels.append(csv[i:])
+
 
         print(self.labels)
 
@@ -65,6 +69,8 @@ class AccentDataset(Dataset):
 
     def __getitem__(self, n):
         filename = self._walker[n]
+        # label = self.labels[n]
+        # print(label)
         return self.load_recording(filename, n, dataset_recordings_folder_pathname, self.ext)
 
 
